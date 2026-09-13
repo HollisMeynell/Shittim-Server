@@ -7,7 +7,7 @@
   "author": "Shittim",
   "license": "MIT",
   "scripts": {
-    "test": "node --test test/updater.test.js test/paths.test.js test/console.test.js test/health.test.js test/procs.test.js test/certs.test.js test/setup.test.js",
+    "test": "node --test test/updater.test.js test/paths.test.js test/console.test.js test/health.test.js test/procs.test.js test/certs.test.js test/setup.test.js test/i18n.test.js",
     "soak": "electron test/soak.js --no-sandbox",
     "start": "electron .",
     "dev": "electron . --dev",
@@ -15,7 +15,8 @@
     "publish": "electron-builder --win --publish always"
   },
   "dependencies": {
-    "electron-updater": "^6.8.9"
+    "electron-updater": "^6.8.9",
+    "i18next": "^26.4.2"
   },
   "devDependencies": {
     "electron": "^33.2.0",
