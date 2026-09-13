@@ -24,6 +24,8 @@ test('English and Chinese locale files contain the same non-empty keys', () => {
     assert.equal(typeof zhCN[key], 'string', `Chinese value for ${key} must be a string`);
     assert.ok(en[key].trim(), `English value for ${key} must not be empty`);
     assert.ok(zhCN[key].trim(), `Chinese value for ${key} must not be empty`);
+    const placeholders = (value) => [...value.matchAll(/{{\s*([^},\s]+)[^}]*}}/g)].map((match) => match[1]).sort();
+    assert.deepEqual(placeholders(zhCN[key]), placeholders(en[key]), `Placeholders for ${key} must match`);
   }
 });
 
@@ -43,4 +45,3 @@ test('every static renderer and main-process translation key exists', () => {
 
   assert.deepEqual(missing, []);
 });
-

@@ -45,10 +45,13 @@ export default {
       const ratesCard = el('div.card', {},
         el('div.card-head', {}, el('span.tab-mark', {}), el('h3', { text: t('gacha.rates.title') }), el('div.spacer', {}), totalTag),
         el('div.card-body', {},
-          el('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '6px', flexWrap: 'wrap', minWidth: 0 } }, frag('<span class="tag gold">★3 SSR</span>'), frag('<span class="tag grey">★2 SR</span>'), frag('<span class="tag">★1 R</span>')),
+          el('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '6px', flexWrap: 'wrap', minWidth: 0 } },
+            el('span.tag.gold', { text: t('gacha.rates.ssrTag') }),
+            el('span.tag.grey', { text: t('gacha.rates.srTag') }),
+            el('span.tag', { text: t('gacha.rates.rTag') })),
           bar,
           el('div.grid-3', { style: { marginTop: '14px' } },
-            field('SSR (★3) %', fSsr), field('SR (★2) %', fSr), field('R (★1) %', fR)),
+            field(t('gacha.rates.ssrLabel'), fSsr), field(t('gacha.rates.srLabel'), fSr), field(t('gacha.rates.rLabel'), fR)),
           el('div.row.wrap', { style: { gap: '10px' } }, normalize,
             el('span.muted', { text: t('gacha.rates.defaultHint'), style: { fontSize: '12px', minWidth: '0', flex: '1 1 200px' } }))));
 

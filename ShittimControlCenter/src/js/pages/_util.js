@@ -1,4 +1,4 @@
-import { el, clear, button } from '../ui.js';
+import { el, clear, button, escapeHtml } from '../ui.js';
 import { store, targetAccount } from '../api.js';
 import { t } from '../i18n.js';
 
@@ -50,6 +50,6 @@ export async function loadInto(container, loader, render) {
     clear(container);
     render(container, data);
   } catch (e) {
-    container.innerHTML = `<div class="empty"><b>${t('common.couldNotLoad')}</b><span>${String(e.message || e)}</span></div>`;
+    container.innerHTML = `<div class="empty"><b>${escapeHtml(t('common.couldNotLoad'))}</b><span>${escapeHtml(String(e.message || e))}</span></div>`;
   }
 }

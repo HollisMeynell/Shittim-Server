@@ -1,6 +1,6 @@
 import { el, frag, clear, button, input, select, toggle, field, toast, modal, textarea, confirmDialog } from '../ui.js';
 import { store } from '../api.js';
-import { t, getLanguage } from '../i18n.js';
+import { t, getLanguage, SUPPORTED_LANGUAGES } from '../i18n.js';
 
 // Defaults mirror Shittim-Server/Configuration/ConfigType/ServerConfig.cs.
 // Reset overwrites only these editable ServerConfiguration fields, preserving GameVersion, gateway keys, ClientPluginDirectory and the Irc/DataFetcher sibling sections in Config.json.
@@ -96,20 +96,18 @@ export default {
   needsTarget: false,
 
   async mount(root, { rerender }) {
-    const language = select([
-      { value: 'en', label: 'English' },
-      { value: 'zh-CN', label: '简体中文' },
-    ], { value: getLanguage() });
+    const language = select(SUPPORTED_LANGUAGES, { value: getLanguage() });
     language.addEventListener('change', async () => {
       language.disabled = true;
-      const saved = await window.host.settingsWrite({ language: language.value });
-      if (saved?.error) {
+      try {
+        const saved = await window.host.settingsWrite({ language: language.value });
+        if (saved?.error) throw new Error(saved.error);
+        window.location.reload();
+      } catch (error) {
         language.disabled = false;
         language.value = getLanguage();
-        toast(saved.error || t('config.language.saveFailed'), 'bad');
-        return;
+        toast(`${t('config.language.saveFailed')}: ${String(error.message || error)}`, 'bad');
       }
-      window.location.reload();
     });
     root.appendChild(el('div.card', { style: { marginBottom: '18px' } },
       el('div.card-head', {}, el('span.tab-mark', {}), el('h3', { text: t('config.language.title') })),
