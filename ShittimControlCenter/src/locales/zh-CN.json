@@ -137,6 +137,7 @@
   "inventory.characters.empty": "暂无学生",
   "inventory.characters.maxConfirm": "将 {{name}} 强化到 90 级，并将星级、技能和装备全部升满？",
   "inventory.characters.maxed": "{{name}} 已强化至满级",
+  "inventory.characters.maxNotConfirmed": "服务器未确认该学生已强化成功。",
   "inventory.characters.maxOut": "全部升满",
   "inventory.characters.maxStudent": "强化学生至满级",
   "inventory.characters.pick": "选择学生",

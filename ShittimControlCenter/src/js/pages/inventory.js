@@ -12,6 +12,9 @@ export default {
     return gate(root, { needServer: true, needTarget: true }, (root) => {
       const acc = targetAccount();
       const uid = acc.serverId;
+      const maxCharsBtn = button(t('inventory.bulk.maxCharacters'), {
+        variant: 'ghost', sm: true, iconName: 'star', onClick: maxAllCharacters,
+      });
 
       const bulk = el('div.card', { style: { marginBottom: '18px' } },
         el('div.card-head', { style: { flexWrap: 'wrap', rowGap: '4px' } }, el('span.tab-mark', {}), el('h3', { text: t('inventory.bulk.title') }),
@@ -22,7 +25,7 @@ export default {
           cmdBtn(uid, t('inventory.bulk.allItems'), 'box', 'inventory add items', 'ghost', () => reloadItems()),
           cmdBtn(uid, t('inventory.bulk.allEquipment'), 'shield', 'giveallequip', 'ghost'),
           cmdBtn(uid, t('inventory.bulk.allCharacters'), 'users', 'giveall', 'ghost', () => reloadChars()),
-          cmdBtn(uid, t('inventory.bulk.maxCharacters'), 'star', 'max all', 'ghost', () => reloadChars()),
+          maxCharsBtn,
           dangerCmd(uid, t('inventory.bulk.clearInventory'), 'trash', 'clearinventory', () => reloadItems())));
       root.appendChild(bulk);
 
@@ -99,18 +102,67 @@ export default {
             });
             starCell.appendChild(s);
           }
-          tr.addEventListener('click', async () => {
-            const ok = await confirmDialog({ title: t('inventory.characters.maxStudent'), confirmLabel: t('inventory.characters.maxOut'), message: t('inventory.characters.maxConfirm', { name: r.name }) });
-            if (!ok) return;
-            const target = r.devName || r.name;
-            try { await api.command(uid, `max ${target}`); toast(t('inventory.characters.maxed', { name: r.name }), 'good'); notifyRestart(); reloadChars(); }
-            catch (e) { toast(e.message, 'bad'); }
-          });
+          let maxPending = false;
+          const confirmMax = async () => {
+            if (maxPending || maxCharsBtn.disabled) return;
+            maxPending = true;
+            try {
+              const ok = await confirmDialog({ title: t('inventory.characters.maxStudent'), confirmLabel: t('inventory.characters.maxOut'), message: t('inventory.characters.maxConfirm', { name: r.name }) });
+              if (!ok) return;
+              await maxCharacter(r);
+              toast(t('inventory.characters.maxed', { name: r.name }), 'good');
+              await reloadChars();
+            } catch (err) { toast(err.message, 'bad'); }
+            finally { maxPending = false; }
+          };
+          tr.addEventListener('click', confirmMax);
           tb.appendChild(tr);
         }
         charsBody.appendChild(tbl);
       }
       async function reloadChars() { await loadInto(charsBody, () => api.characters(uid), (_b, rows) => { charRows = rows; paintChars(); }); }
+
+      // Both entry points perform exactly the action confirmed by "Max out".
+      async function maxCharacter(character) {
+        const target = character.devName || character.name;
+        const result = await api.command(uid, `max ${target}`);
+        const output = typeof result?.output === 'string' ? result.output.trim() : '';
+        // The command API also returns HTTP 200 / success:true when the command
+        // reports "not found" or "You don't own ...". Check its actual result.
+        if (result?.success !== true || !output.startsWith(`Maxed out ${target}!`)) {
+          throw new Error(output || t('inventory.characters.maxNotConfirmed'));
+        }
+        notifyRestart();
+      }
+
+      async function maxAllCharacters() {
+        if (maxCharsBtn.disabled) return;
+        maxCharsBtn.disabled = true;
+        const label = t('inventory.bulk.maxCharacters');
+        const labelEl = maxCharsBtn.querySelector('span');
+        try {
+          // Fetch the complete roster even if the list is loading or filtered.
+          const characters = await api.characters(uid);
+          if (!characters.length) { toast(t('inventory.characters.empty'), 'warn'); return; }
+          let completed = 0;
+          for (const character of characters) {
+            labelEl.textContent = `${label} (${completed}/${characters.length})`;
+            try {
+              await maxCharacter(character);
+              completed++;
+            } catch (e) {
+              toast(`${character.name}: ${e.message}`, 'bad');
+            }
+          }
+          toast(`${label} (${completed}/${characters.length})`, completed === characters.length ? 'good' : 'warn');
+          await reloadChars();
+        } catch (e) {
+          toast(e.message, 'bad');
+        } finally {
+          labelEl.textContent = label;
+          maxCharsBtn.disabled = false;
+        }
+      }
 
       function addChar() {
         openPicker({ title: t('inventory.characters.pick'), loader: (q) => api.staticCharacters(q).then((r) => r.map((x) => ({ id: x.id, name: x.name, sub: `★${x.maxStar}` }))),

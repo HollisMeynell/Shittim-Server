@@ -137,6 +137,7 @@
   "inventory.characters.empty": "No characters",
   "inventory.characters.maxConfirm": "Max {{name}} (level 90, max stars, skills, gear)?",
   "inventory.characters.maxed": "{{name}} maxed",
+  "inventory.characters.maxNotConfirmed": "The server did not confirm that this student was upgraded.",
   "inventory.characters.maxOut": "Max out",
   "inventory.characters.maxStudent": "Max student",
   "inventory.characters.pick": "Pick a student",
